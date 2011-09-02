@@ -1,0 +1,2 @@
+# Prevent Directoy listing 
+Options -Indexes
