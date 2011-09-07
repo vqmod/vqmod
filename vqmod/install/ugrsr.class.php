@@ -6,7 +6,7 @@
  * @package Universal Global RegEx Search/Replace
  * @author Qphoria - http://theqdomain.com/ & Jay Gilford - http://jaygilford.com/
  * @copyright Qphoria & Jay Gilford 2011
- * @version 0.1
+ * @version 0.2
  * @access public
  * 
  * @information
@@ -305,6 +305,9 @@ class UGRSR {
 		// Var for total regex matches throughout files
 		$global_change_count = 0;
 		
+		// Var to hold 
+		$global_write_count = 0;
+		
 		// Var to hold number of bytes saved
 		$bytes_saved = 0;
 		
@@ -364,6 +367,7 @@ class UGRSR {
 					$result = file_put_contents($filename, $content);
 					if($result) {
 						$this->_dbg('SUCCESSFULLY WROTE ' . $result . ' BYTES  TO [' . $filename . ']');
+						$global_write_count++;
 					} else {
 						$this->_dbg('WRITE OPERATION FAILED IN [' . $filename . ']');
 					}
@@ -389,8 +393,11 @@ class UGRSR {
 		$this->_dbg('FINISHED RUN');
 		$this->_dbg();
 		
-		// Pass back the number of changes matched
-		return $global_change_count;
+		// Pass back the number of changes and writes matched
+		return array(
+			'changes' => $global_change_count,
+			'writes' => $global_write_count
+		);
 	}
 	
 	/**
