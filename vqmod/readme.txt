@@ -9,7 +9,7 @@ ABOUT:
  * @license http://opensource.org/licenses/gpl-license.php GNU Public License
  * @site: http://code.google.com/p/vqmod
 
-"vQmod"(TM) is a new innovation in php modification override methods.
+"vQmod"(TM) (aka Virtual Quick Mod) is a new innovation in php modification override methods.
 Instead of modifying actual files to add custom modifications, source files are parsed "on-the-fly" before the php include() or require() is called.
 The source is cloned to a temp file and modifications are made to that temp file, then substituted for the real file in the include path.
 
@@ -23,6 +23,10 @@ http://code.google.com/p/vqmod
 
 HISTORY:
 ============
+v2.0 - 2011-SEP-14 - Jay@jaygilford.com
+ - Complete Code Rewrite by JayG to be more object based
+ - New "log" attribute for <operation error="abort|skip|log"> to skip and log.
+ 
 v1.2.3 - 2011-JUN-21 - Qphoria@gmail.com
  - Fixed index explode issue per JayGs fix
 
