@@ -13,9 +13,8 @@ ABOUT:
 Instead of modifying actual files to add custom modifications, source files are parsed "on-the-fly" before the php include() or require() is called.
 The source is cloned to a temp file and modifications are made to that temp file, then substituted for the real file in the include path.
 
-See website for additional information, usage, and syntax:
-
 =====================================
+See website for additional information, usage, and syntax:
 http://code.google.com/p/vqmod
 =====================================
 
