@@ -219,6 +219,10 @@ class VQModObject {
 		foreach($files as $file) {
 			$fileToMod = $file->getAttribute('name');
 			$fullPath = $this->_vqmod->path($fileToMod);
+			if(!$fullPath){
+				$this->_vqmod->log->write('Could not resolve path for [' . $fileToMod . ']', $this);
+				continue;
+			}
 			$this->_vqmod->addFileToMod($fileToMod, $fullPath);
 
 			$operations = $file->getElementsByTagName('operation');
@@ -302,7 +306,7 @@ final class VQMod {
 	public $logging = true;
 	public $log;
 
-	private $_vqversion = '2.0';
+	private $_vqversion = '2.0.1';
 	private $_modFileList = array();
 	private $_mods = array();
 	private $_filesToMod = array();
@@ -334,7 +338,7 @@ final class VQMod {
 			$sourcePath = realpath($sourceFile);
 		}
 
-		if(!$sourcePath) {
+		if(!$sourcePath || is_dir($sourcePath)) {
 			return $sourceFile;
 		}
 
@@ -370,7 +374,7 @@ final class VQMod {
 		$tmp = $this->_cwd . $path;
 		$realpath = $skip_real ? $tmp : realpath($tmp);
 		if(!$realpath) {
-			die('COULDNT RESOLVE REAL PATH [' . $this->_cwd . $path . ']');
+			return false;
 		}
 		if(is_dir($realpath)) {
 			$realpath = rtrim($realpath, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR;
@@ -381,6 +385,7 @@ final class VQMod {
 	public function addFileToMod($path, $fullPath = false) {
 		if(!$fullPath) {
 			$fullPath = $this->path($path);
+			
 		}
 		if(empty($this->_filesToMod[$fullPath])) {
 			$this->_filesToMod[$fullPath] = array(
