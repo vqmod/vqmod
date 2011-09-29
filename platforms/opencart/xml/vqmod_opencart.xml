@@ -58,5 +58,12 @@
 			require($vqmod->modCheck($1));]]></add>
 		</operation>
 	</file>
+	
+	<file name="system/library/template.php">
+		<operation>
+			<search position="before"><![CDATA[file_exists($file)]]></search>
+			<add><![CDATA[global $vqmod; $file = $vqmod->modCheck($file);]]></add>
+		</operation>
+	</file>
 
 </modification>
