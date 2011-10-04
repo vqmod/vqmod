@@ -12,7 +12,7 @@
 
 	<file name="system/engine/controller.php">
 		<operation>
-			<search position="before"><![CDATA[if (file_exists($file)) {]]></search>
+			<search position="before"><![CDATA[if (file_exists($file))]]></search>
 			<add><![CDATA[global $vqmod; $file = $vqmod->modCheck($file);]]></add>
 		</operation>
 		<operation error="skip"><!-- v1.5.x only -->
@@ -51,8 +51,8 @@
 		</operation>
 	</file>
 	
-	<file name="system/library/language.php"><!-- 2 matches -->
-		<operation error="skip"><!-- v1.4.x only -->
+	<file name="system/library/language.php">
+		<operation error="skip">
 			<search position="replace" regex="true"><![CDATA[~require\((\$default|\$file)\);~]]></search>
 			<add><![CDATA[global $vqmod;
 			require($vqmod->modCheck($1));]]></add>

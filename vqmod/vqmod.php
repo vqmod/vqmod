@@ -194,6 +194,8 @@ class VQModObject {
 								$this->_vqmod->log->write('INVALID REGEX ERROR - ' . $mod['search']->getContent(), $this);
 							}
 							continue 2;
+						} elseif($pos == 0) {
+							$pos = false;
 						}
 					} else {
 						$pos = strpos($line, $mod['search']->getContent());
