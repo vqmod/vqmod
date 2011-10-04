@@ -414,7 +414,7 @@ final class VQMod {
 	public $logging = true;
 	public $log;
 
-	private $_vqversion = '2.1.0';
+	private $_vqversion = '2.1.1';
 	private $_modFileList = array();
 	private $_mods = array();
 	private $_filesModded = array();
