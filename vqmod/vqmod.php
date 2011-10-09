@@ -2,7 +2,7 @@
 
 /**
  * VQModLog
- * @description Object to log to information to a file
+ * @description Object to log information to a file
  */
 class VQModLog {
 	private $_sep;
@@ -158,6 +158,7 @@ class VQModObject {
 	 * @description Applies all modifications to the text data 
 	 */
 	public function applyMod($mods, &$data) {
+		if($this->_skip) return;
 		$tmp = $data;
 
 		foreach($mods as $mod) {
@@ -175,7 +176,7 @@ class VQModObject {
 				if($offset < 0){
 					$tmp[-1] = $mod['add']->getContent();
 				} else {
-					$tmp[$offset] += $mod['add']->getContent();
+					$tmp[$offset] .= $mod['add']->getContent();
 				}
 				break;
 
@@ -414,7 +415,7 @@ final class VQMod {
 	public $logging = true;
 	public $log;
 
-	private $_vqversion = '2.1.1';
+	private $_vqversion = '2.1.2';
 	private $_modFileList = array();
 	private $_mods = array();
 	private $_filesModded = array();
@@ -575,7 +576,7 @@ final class VQMod {
 	 */
 	private function _loadProtected() {
 		$file = $this->path($this->protectedFilelist);
-		if($file && is_file($file)); {
+		if($file && is_file($file)) {
 			$protected = file_get_contents($file);
 			if(!empty($protected)) {
 				$protected = preg_replace('~\r?\n~', "\n", $protected);
