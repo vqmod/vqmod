@@ -415,7 +415,7 @@ final class VQMod {
 	public $logging = true;
 	public $log;
 
-	private $_vqversion = '2.1.2';
+	private $_vqversion = '2.1.3';
 	private $_modFileList = array();
 	private $_mods = array();
 	private $_filesModded = array();
@@ -469,6 +469,10 @@ final class VQMod {
 		
 		$stripped_filename = preg_replace('~^' . preg_quote($this->getCwd(), '~') . '~', '', $sourcePath);
 		$cacheFile = $this->_cacheName($stripped_filename);
+		
+		if($this->useCache && file_exists($cacheFile)) {
+			return $cacheFile;
+		}
 
 		if(isset($this->_filesModded[$sourcePath])) {
 			return $this->_filesModded[$sourcePath]['cached'] ? $cacheFile : $sourceFile;
