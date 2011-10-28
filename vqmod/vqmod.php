@@ -64,13 +64,13 @@ class VQModLog {
 
 		$logPath = $this->_vqmod->path($this->_vqmod->logFilePath, true);
 		if(!file_exists($logPath)) {
-			$res = file_put_contents($logPath, '');
+			$res = $this->_vqmod->writeFile($logPath, '');
 			if($res === false) {
 				die('COULD NOT WRITE TO LOG FILE');
 			}
 		}
 
-		file_put_contents($logPath, implode(PHP_EOL, $txt), FILE_APPEND);
+		$this->_vqmod->writeFile($logPath, implode(PHP_EOL, $txt), true, true);
 	}
 
 	/**
@@ -415,7 +415,7 @@ final class VQMod {
 	public $logging = true;
 	public $log;
 
-	private $_vqversion = '2.1.3';
+	private $_vqversion = '2.1.4';
 	private $_modFileList = array();
 	private $_mods = array();
 	private $_filesModded = array();
@@ -480,7 +480,7 @@ final class VQMod {
 		
 		$changed = false;
 		$fileHash = sha1_file($sourcePath);
-		$fileData = file_get_contents($sourcePath);
+		$fileData = $this->readFile($sourcePath);
 		
 		foreach($this->_mods as $modObject) {
 			foreach($modObject->mods as $path => $mods) {
@@ -493,7 +493,7 @@ final class VQMod {
 		if(sha1($fileData) != $fileHash) {
 			$writePath = $this->_virtualMode ?  $cacheFile : $sourcePath;
 			if(!file_exists($writePath) || is_writable($writePath)) {
-				file_put_contents($writePath, $fileData);
+				$this->writeFile($writePath, $fileData);
 				$changed = true;
 			}
 		}
@@ -530,6 +530,63 @@ final class VQMod {
 	 */
 	public function getCwd() {
 		return $this->_cwd;
+	}
+	
+	/**
+	 * VQMod::readFile()
+	 * 
+	 * @param string $filename
+	 * @return bool, string
+	 * @description Substitute function for file_get_contents to force exclusive lock on file when reading
+	 */
+	public function readFile($filename)
+	{
+		if (false === $fp = fopen($filename, 'rb')) {
+			trigger_error('VQMOd::readFile() failed to open stream: No such file or directory', E_USER_WARNING);
+			return false;
+		}
+		
+		flock($fp, LOCK_EX);
+		
+		clearstatcache();
+		if ($fsize = @filesize($filename)) {
+			$data = fread($fp, $fsize);
+		} else {
+			$data = '';
+			while (!feof($fp)) {
+				$data .= fread($fp, 8192);
+			}
+		}
+		flock($fp, LOCK_UN);
+		
+		fclose($fp);
+		return $data;
+	}
+	
+	/**
+	 * VQMod::writeFile()
+	 * 
+	 * @param string $filename
+	 * @param string $data
+	 * @param bool $append
+	 * @param bool $force
+	 * @return int
+	 * @description Substitute function for file_put_contents to force exclusive lock when writing a file
+	 */
+	public function writeFile($filename, $data, $append = false, $force = false) {
+		$mode = $append ? 'a' : 'w';
+		$flock = $force ? LOCK_EX : (LOCK_EX | LOCK_NB);
+		$bytes = 0;
+		
+		$fp = fopen($filename, $mode);
+		
+		if(flock($fp, $flock)) {
+			$bytes = fwrite($fp, $data);
+		}
+		
+		flock($fp, LOCK_UN);
+		fclose($fp);
+		return $bytes;
 	}
 
 	/**
@@ -581,7 +638,7 @@ final class VQMod {
 	private function _loadProtected() {
 		$file = $this->path($this->protectedFilelist);
 		if($file && is_file($file)) {
-			$protected = file_get_contents($file);
+			$protected = $this->readFile($file);
 			if(!empty($protected)) {
 				$protected = preg_replace('~\r?\n~', "\n", $protected);
 				$paths = explode("\n", $protected);
