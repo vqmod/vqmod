@@ -1,2 +1,7 @@
 # Prevent Directoy listing 
 Options -Indexes
+
+<FilesMatch "\.(xml)">
+Order deny,allow
+Deny from all
+</FilesMatch>
