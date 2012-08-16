@@ -5,7 +5,7 @@ vQmod™ - Virtual File Modification System
 ABOUT:
 =========
  * @author Qphoria <qphoria@gmail.com> & JayGilford <jay@jaygilford.com>
- * @copyright (c) 2010-2011
+ * @copyright (c) 2010-2012
  * @license http://opensource.org/licenses/gpl-license.php GNU Public License
  * @site: http://code.google.com/p/vqmod
 
