@@ -4,7 +4,7 @@
  * @description Main Object used
  */
 final class VQMod {
-	private $_vqversion = '2.1.6';
+	private $_vqversion = '2.1.7';
 	private $_modFileList = array();
 	private $_mods = array();
 	private $_filesModded = array();
@@ -17,6 +17,7 @@ final class VQMod {
 	public $vqCachePath = 'vqmod/vqcache/';
 	public $protectedFilelist = 'vqmod/vqprotect.txt';
 	public $logging = true;
+	public $cacheTime = 60; //seconds
 	public $log;
 
 	/**
@@ -67,7 +68,7 @@ final class VQMod {
 		$cacheFile = $this->_cacheName($stripped_filename);
 
 		if($this->useCache && file_exists($cacheFile)) {
-			return $cacheFile;
+			//return $cacheFile; // useCache being Deprecated in favor of cacheTime
 		}
 
 		if(isset($this->_filesModded[$sourcePath])) {
@@ -87,15 +88,19 @@ final class VQMod {
 		}
 
 		// START QPHORIA CACHELOCK CODE
+		// 
 		if (sha1($fileData) != $fileHash) {
-			$writePath = $this->_virtualMode ?  $cacheFile : $sourcePath;
+			$writePath = $cacheFile;
 			$cacheLock = false;
-			if ($this->_virtualMode && file_exists($writePath) && ((filemtime($writePath) + 3) >= time())) { $cacheLock = true; $changed = true; }
+			if(file_exists($writePath) && ((filemtime($writePath) + (float)$this->cacheTime) >= time())) { 
+				$cacheLock = true;
+				$changed = true; 
+			}
 			if(!$cacheLock && (!file_exists($writePath) || is_writable($writePath))) {
 				file_put_contents($writePath, $fileData);
 				$changed = true;
 			} else {
-				//file_put_contents('./cachelock.txt', "$writePath \r\n", FILE_APPEND);
+				//file_put_contents('./cachelock.txt', "$writePath \r\n", FILE_APPEND); // debugging only.
 			}
 			//file_put_contents('./cachetotal.txt', "$writePath \r\n", FILE_APPEND);
 		} // END QPHORIA CACHELOCK CODE

@@ -1,7 +1,7 @@
 <modification>
 	<id>VQMOD CORE FOR OPENCART STARTUP.PHP - DO NOT REMOVE AS THIS IS NEEDED FOR VQMOD IN OPENCART</id>
 	<version>1.4.x and 1.5.x</version>
-	<vqmver>1.0.8</vqmver>
+	<vqmver>2.1.6</vqmver>
 	<author>qphoria</author>
 	<file name="system/startup.php">
 		<operation>
@@ -11,7 +11,12 @@
 	</file>
 
 	<file name="system/engine/controller.php">
-		<operation>
+		<operation error="skip"><!-- v1.5.4+ -->
+			<search position="replace"><![CDATA[if (file_exists($action->getFile())) {]]></search>
+			<add><![CDATA[global $vqmod; $file = $vqmod->modCheck($action->getFile());
+			if (file_exists($file)) {]]></add>
+		</operation>
+		<operation error="skip"><!-- v1.5.3- -->
 			<search position="before"><![CDATA[if (file_exists($file))]]></search>
 			<add><![CDATA[global $vqmod; $file = $vqmod->modCheck($file);]]></add>
 		</operation>
@@ -38,7 +43,15 @@
 	</file>
 
 	<file name="system/engine/front.php">
-		<operation>
+		<operation error="skip"><!-- v1.5.4+ -->
+			<search position="replace"><![CDATA[if (file_exists($action->getFile())) {]]></search>
+			<add><![CDATA[global $vqmod; $file = $vqmod->modCheck($action->getFile());
+			if (file_exists($file)) {]]></add>
+		</operation>
+	</file>
+	
+	<file name="system/engine/front.php">
+		<operation error="skip"><!-- v1.5.3- -->
 			<search position="before"><![CDATA[if (file_exists($file)) {]]></search>
 			<add><![CDATA[global $vqmod; $file = $vqmod->modCheck($file);]]></add>
 		</operation>
