@@ -4,21 +4,26 @@
  * @description Main Object used
  */
 final class VQMod {
-	private $_vqversion = '2.1.7';
+	private $_vqversion = '2.2.0';
 	private $_modFileList = array();
 	private $_mods = array();
 	private $_filesModded = array();
 	private $_cwd = '';
 	private $_doNotMod = array();
-	private $_virtualMode = true;
+	private $_folderChecks = false;
+	private $_cachePathFull = '';
+	private $_lastModifiedTime = 0;
 
-	public $useCache = false;
-	public $logFilePath = 'vqmod/vqmod.log';
+	public $useCache = false;	// Deprecated - Will be removed as of 2.3.0
+	public $logFilePath = 'vqmod/vqmod.log';	// Deprecated - Will be removed as of 2.3.0
+	public $logFolder = 'vqmod/logs/';
 	public $vqCachePath = 'vqmod/vqcache/';
+	public $modCache = 'vqmod/mods.cache';
 	public $protectedFilelist = 'vqmod/vqprotect.txt';
 	public $logging = true;
-	public $cacheTime = 60; //seconds
+	public $cacheTime = 60; //seconds	// Deprecated - Will be removed as of 2.3.0
 	public $log;
+	public $fileModding = false;
 
 	/**
 	 * VQMod::__construct()
@@ -54,10 +59,28 @@ final class VQMod {
 	 */
 	public function modCheck($sourceFile) {
 
+		if(!$this->_folderChecks) {
+
+			if($this->logging) {
+				// Create log folder if it doesn't exist
+				$log_folder = $this->path($this->logFolder, true);
+				$this->dirCheck($log_folder);
+			}
+
+			// Create cache folder if it doesn't exist
+			$cache_folder = $this->path($this->vqCachePath, true);
+			$this->dirCheck($cache_folder);
+
+			// Store cache folder path to save on repeat checks for path validity
+			$this->_cachePathFull = $this->path($this->vqCachePath);
+
+			$this->_folderChecks = true;
+		}
+
 		if(!preg_match('%^([a-z]:)?[\\\\/]%i', $sourceFile)) {
 			$sourcePath = $this->path($sourceFile);
 		} else {
-			$sourcePath = realpath($sourceFile);
+			$sourcePath = $this->_realpath($sourceFile);
 		}
 
 		if(!$sourcePath || is_dir($sourcePath) || in_array($sourcePath, $this->_doNotMod)) {
@@ -67,8 +90,8 @@ final class VQMod {
 		$stripped_filename = preg_replace('~^' . preg_quote($this->getCwd(), '~') . '~', '', $sourcePath);
 		$cacheFile = $this->_cacheName($stripped_filename);
 
-		if($this->useCache && file_exists($cacheFile)) {
-			//return $cacheFile; // useCache being Deprecated in favor of cacheTime
+		if(file_exists($cacheFile) && filemtime($cacheFile) >= $this->_lastModifiedTime) {
+			return $cacheFile;
 		}
 
 		if(isset($this->_filesModded[$sourcePath])) {
@@ -87,34 +110,16 @@ final class VQMod {
 			}
 		}
 
-		// START QPHORIA CACHELOCK CODE
-		// 
 		if (sha1($fileData) != $fileHash) {
 			$writePath = $cacheFile;
-			$cacheLock = false;
-			if(file_exists($writePath) && ((filemtime($writePath) + (float)$this->cacheTime) >= time())) { 
-				$cacheLock = true;
-				$changed = true; 
-			}
-			if(!$cacheLock && (!file_exists($writePath) || is_writable($writePath))) {
-				file_put_contents($writePath, $fileData);
-				$changed = true;
-			} else {
-				//file_put_contents('./cachelock.txt', "$writePath \r\n", FILE_APPEND); // debugging only.
-			}
-			//file_put_contents('./cachetotal.txt', "$writePath \r\n", FILE_APPEND);
-		} // END QPHORIA CACHELOCK CODE
-
-		/* Original Code
-		if(sha1($fileData) != $fileHash) {
-			$writePath = $this->_virtualMode ?  $cacheFile : $sourcePath;
 			if(!file_exists($writePath) || is_writable($writePath)) {
 				file_put_contents($writePath, $fileData);
 				$changed = true;
 			}
-		}*/
+		}
 
 		$this->_filesModded[$sourcePath] = array('cached' => $changed);
+		$this->fileModding = false;
 		return $changed ? $writePath : $sourcePath;
 	}
 
@@ -128,12 +133,9 @@ final class VQMod {
 	 */
 	public function path($path, $skip_real = false) {
 		$tmp = $this->_cwd . $path;
-		$realpath = $skip_real ? $tmp : realpath($tmp);
+		$realpath = $skip_real ? $tmp : $this->_realpath($tmp);
 		if(!$realpath) {
 			return false;
-		}
-		if(is_dir($realpath)) {
-			$realpath = rtrim($realpath, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR;
 		}
 		return $realpath;
 	}
@@ -149,6 +151,21 @@ final class VQMod {
 	}
 
 	/**
+	 * VQMod::dirCheck()
+	 * 
+	 * @param string $path
+	 * @return null
+	 * @description Creates $path folder if it doesn't exist 
+	 */
+	public function dirCheck($path) {
+		if(!is_dir($path)) {
+			if(!mkdir($path)) {
+				die('ERROR! FOLDER CANNOT BE CREATED: ' . $path);
+			}
+		}
+	}
+
+	/**
 	 * VQMod::_getMods()
 	 *
 	 * @return null
@@ -157,6 +174,27 @@ final class VQMod {
 	private function _getMods() {
 
 		$this->_modFileList = glob($this->path('vqmod/xml/') . '*.xml');
+
+		foreach($this->_modFileList as $file) {
+			if(file_exists($file)) {
+				$lastMod = filemtime($file);
+				if($lastMod > $this->_lastModifiedTime){
+					$this->_lastModifiedTime = $lastMod;
+				}
+			}
+		}
+
+		$xml_folder_time = filemtime($this->path('vqmod/xml'));
+		if($xml_folder_time > $this->_lastModifiedTime){
+			$this->_lastModifiedTime = $xml_folder_time;
+		}
+
+		$modCache = $this->path($this->modCache);
+		if(file_exists($modCache) && filemtime($modCache) >= $this->_lastModifiedTime) {
+			$mods = file_get_contents($modCache);
+			$this->_mods = unserialize($mods);
+			return;
+		}
 
 		if($this->_modFileList) {
 			$this->_parseMods();
@@ -185,6 +223,12 @@ final class VQMod {
 			} else {
 				$this->log->write('FILE NOT FOUND: ' . $modFile);
 			}
+		}
+
+		$modCache = $this->path($this->modCache);
+		$result = file_put_contents($modCache, serialize($this->_mods));
+		if(!$result) {
+			die('MODS CACHE PATH NOT WRITEABLE');
 		}
 	}
 
@@ -219,7 +263,7 @@ final class VQMod {
 	 * @description Returns cache file name for a path
 	 */
 	private function _cacheName($file) {
-		return $this->path($this->vqCachePath) . 'vq2-' . preg_replace('~[/\\\\]+~', '_', $file);
+		return $this->_cachePathFull . 'vq2-' . preg_replace('~[/\\\\]+~', '_', $file);
 	}
 
 	/**
@@ -230,11 +274,27 @@ final class VQMod {
 	 * @description Sets the current working directory variable
 	 */
 	private function _setCwd($path) {
-		$realpath = realpath($path);
-		if(!$realpath) {
-			die('COULDNT RESOLVE CWD REALPATH');
+		$this->_cwd = $this->_realpath($path);
+	}
+
+	/**
+	 * VQMod::_realpath()
+	 * 
+	 * @param string $file
+	 * @return string
+	 * @description Returns real path of any path, adding directory slashes if necessary
+	 */
+	private function _realpath($file) {
+		$path = realpath($file);
+		if(!file_exists($path)) {
+			return $file;
 		}
-		$this->_cwd = rtrim($realpath, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR;
+
+		if(is_dir($path)) {
+			$path = rtrim($path, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR;
+		}
+
+		return $path;
 	}
 
 	/**
@@ -290,6 +350,8 @@ class VQModLog {
 			return;
 		}
 
+		$logPath = $this->_vqmod->path($this->_vqmod->logFolder . date('D') . '.log', true);
+
 		$txt = array();
 
 		$txt[] = str_repeat('-', 10) . ' Date: ' . date('Y-m-d H:i:s') . ' ~ IP : ' . (isset($_SERVER['REMOTE_ADDR']) ? $_SERVER['REMOTE_ADDR'] : 'N/A') . ' ' . str_repeat('-', 10);
@@ -318,16 +380,21 @@ class VQModLog {
 
 		$txt[] = $this->_sep;
 		$txt[] = str_repeat(PHP_EOL, 2);
+		$append = true;
 
-		$logPath = $this->_vqmod->path($this->_vqmod->logFilePath, true);
 		if(!file_exists($logPath)) {
-			$res = file_put_contents($logPath, '');
-			if($res === false) {
-				die('COULD NOT WRITE TO LOG FILE');
+			$append = false;
+		} else {
+			$content = file_get_contents($logPath);
+			if(!empty($content) && strpos($content, ' Date: ' . date('Y-m-d ')) === false) {
+				$append = false;
 			}
 		}
 
-		file_put_contents($logPath, implode(PHP_EOL, $txt), FILE_APPEND);
+		$result = file_put_contents($logPath, implode(PHP_EOL, $txt), ($append ? FILE_APPEND : 0));
+		if(!$result) {
+			die('LOG FILE COULD NOT BE WRITTEN');
+		}
 	}
 
 	/**
@@ -350,6 +417,10 @@ class VQModLog {
 				'obj' => $obj,
 				'log' => array()
 			);
+		}
+
+		if($this->_vqmod->fileModding) {
+			$this->_logs[$hash]['log'][] = PHP_EOL . 'File Name    : ' . $this->_vqmod->fileModding;
 		}
 
 		$this->_logs[$hash]['log'][] = $data;

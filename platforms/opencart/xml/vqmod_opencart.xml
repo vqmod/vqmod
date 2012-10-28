@@ -1,8 +1,8 @@
 <modification>
-	<id>VQMOD CORE FOR OPENCART STARTUP.PHP - DO NOT REMOVE AS THIS IS NEEDED FOR VQMOD IN OPENCART</id>
+	<id>VQMOD CORE FOR OPENCART - DO NOT REMOVE</id>
 	<version>1.4.x and 1.5.x</version>
-	<vqmver>2.1.7</vqmver>
-	<author>qphoria</author>
+	<vqmver>2.2.0</vqmver>
+	<author>vqmod.com</author>
 	<file name="system/startup.php">
 		<operation>
 			<search position="replace" regex="true"><![CDATA[~require_once\(([^)]+)~]]></search>
