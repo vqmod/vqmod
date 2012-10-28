@@ -6,7 +6,7 @@
  * @package Simple vQmod OpenCart install script
  * @author Jay Gilford - http://jaygilford.com/
  * @copyright Jay Gilford 2011
- * @version 0.2
+ * @version 0.3
  * @access public
  * 
  * @information
@@ -38,10 +38,22 @@ $writes = 0;
 require('ugrsr.class.php');
 
 // Get directory two above installation directory
-$opencart_path = realpath(dirname(__FILE__) . '/../../');
+$opencart_path = realpath(dirname(__FILE__) . '/../../') . '/';
 
 // Verify path is correct
 if(!$opencart_path) die('COULD NOT DETERMINE CORRECT FILE PATH');
+
+$write_errors = array();
+if(!is_writeable($opencart_path . 'index.php')) {
+	$write_errors[] = 'index.php not writeable';
+}
+if(!is_writeable($opencart_path . 'admin/index.php')) {
+	$write_errors[] = 'Administrator index.php not writeable';
+}
+
+if(!empty($write_errors)) {
+	die(implode('<br />', $write_errors));
+}
 
 // Create new UGRSR class
 $u = new UGRSR($opencart_path);
