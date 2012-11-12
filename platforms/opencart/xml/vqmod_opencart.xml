@@ -1,7 +1,7 @@
 <modification>
 	<id>VQMOD CORE FOR OPENCART - DO NOT REMOVE</id>
 	<version>1.4.x and 1.5.x</version>
-	<vqmver>2.2.0</vqmver>
+	<vqmver>2.2.1</vqmver>
 	<author>vqmod.com</author>
 	<file name="system/startup.php">
 		<operation>
@@ -18,6 +18,10 @@
 		<operation error="skip">
 			<search position="before" index="1"><![CDATA[$vqmod->modCheck($action->getFile()]]></search>
 			<add><![CDATA[		global $vqmod;]]></add>
+		</operation>
+		<operation error="skip"><!-- v1.5.3 -->
+			<search position="before"><![CDATA[if (file_exists($file))]]></search>
+			<add><![CDATA[global $vqmod; $file = $vqmod->modCheck($file);]]></add>
 		</operation>
 		<operation error="skip"><!-- v1.5.x only -->
 			<search position="replace"><![CDATA[if (file_exists(DIR_TEMPLATE . $this->template)) {]]></search>

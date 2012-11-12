@@ -4,7 +4,7 @@
  * @description Main Object used
  */
 final class VQMod {
-	private $_vqversion = '2.2.0';
+	private $_vqversion = '2.2.1';
 	private $_modFileList = array();
 	private $_mods = array();
 	private $_filesModded = array();
@@ -83,14 +83,15 @@ final class VQMod {
 			$sourcePath = $this->_realpath($sourceFile);
 		}
 
-		if(!$sourcePath || is_dir($sourcePath) || in_array($sourcePath, $this->_doNotMod)) {
+		if(!$sourcePath || !file_exists($sourcePath) || is_dir($sourcePath) || in_array($sourcePath, $this->_doNotMod)) {
 			return $sourceFile;
 		}
 
 		$stripped_filename = preg_replace('~^' . preg_quote($this->getCwd(), '~') . '~', '', $sourcePath);
 		$cacheFile = $this->_cacheName($stripped_filename);
+		$file_last_modified = filemtime($sourcePath);
 
-		if(file_exists($cacheFile) && filemtime($cacheFile) >= $this->_lastModifiedTime) {
+		if(file_exists($cacheFile) && filemtime($cacheFile) >= $this->_lastModifiedTime && filemtime($cacheFile) >= $file_last_modified) {
 			return $cacheFile;
 		}
 
@@ -516,6 +517,13 @@ class VQModObject {
 
 				$changed = false;
 				foreach($tmp as $lineNum => $line) {
+					if(strlen($mod['search']->getContent()) == 0) {
+						if($mod['error'] == 'log' || $mod['error'] == 'abort') {
+							$this->_vqmod->log->write('EMPTY SEARCH CONTENT ERROR', $this);
+						}
+						break;
+					}
+					
 					if($mod['search']->regex == 'true') {
 						$pos = @preg_match($mod['search']->getContent(), $line);
 						if($pos === false) {
