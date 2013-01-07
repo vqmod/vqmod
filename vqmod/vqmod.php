@@ -4,7 +4,7 @@
  * @description Main Object used
  */
 final class VQMod {
-	private $_vqversion = '2.2.1';
+	private $_vqversion = '2.2.2';
 	private $_modFileList = array();
 	private $_mods = array();
 	private $_filesModded = array();
@@ -613,7 +613,7 @@ class VQModObject {
 			$error = ($file->hasAttribute('error')) ? $file->getAttribute('error') : 'log';
 			$fullPath = $this->_vqmod->path($fileToMod);
 
-			if(!$fullPath){
+			if(!$fullPath || !file_exists($fullPath)){
 				if(strpos($fileToMod, '*') !== false) {
 					$fullPath = $this->_vqmod->getCwd() . $fileToMod;
 				} else {
