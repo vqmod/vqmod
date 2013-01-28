@@ -1,7 +1,7 @@
 <modification>
 	<id>VQMOD CORE FOR OPENCART - DO NOT REMOVE</id>
 	<version>1.4.x and 1.5.x</version>
-	<vqmver>2.2.1</vqmver>
+	<vqmver>2.X</vqmver>
 	<author>vqmod.com</author>
 	<file name="system/startup.php">
 		<operation>

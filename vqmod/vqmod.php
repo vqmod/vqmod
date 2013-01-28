@@ -4,7 +4,7 @@
  * @description Main Object used
  */
 final class VQMod {
-	private $_vqversion = '2.2.2';
+	private $_vqversion = '2.3.0';
 	private $_modFileList = array();
 	private $_mods = array();
 	private $_filesModded = array();
@@ -13,17 +13,16 @@ final class VQMod {
 	private $_folderChecks = false;
 	private $_cachePathFull = '';
 	private $_lastModifiedTime = 0;
+	private $_devMode = false;
 
-	public $useCache = false;	// Deprecated - Will be removed as of 2.3.0
-	public $logFilePath = 'vqmod/vqmod.log';	// Deprecated - Will be removed as of 2.3.0
 	public $logFolder = 'vqmod/logs/';
 	public $vqCachePath = 'vqmod/vqcache/';
 	public $modCache = 'vqmod/mods.cache';
 	public $protectedFilelist = 'vqmod/vqprotect.txt';
 	public $logging = true;
-	public $cacheTime = 60; //seconds	// Deprecated - Will be removed as of 2.3.0
 	public $log;
 	public $fileModding = false;
+	public $directorySeparator = '';
 
 	/**
 	 * VQMod::__construct()
@@ -37,6 +36,8 @@ final class VQMod {
 		if(!class_exists('DOMDocument')) {
 			die('ERROR - YOU NEED DOMDocument INSTALLED TO USE VQMod');
 		}
+		
+		$this->directorySeparator = defined('DIRECTORY_SEPARATOR') ? DIRECTORY_SEPARATOR : '/';
 
 		if(!$path){
 			$path = dirname(dirname(__FILE__));
@@ -191,7 +192,9 @@ final class VQMod {
 		}
 
 		$modCache = $this->path($this->modCache);
-		if(file_exists($modCache) && filemtime($modCache) >= $this->_lastModifiedTime) {
+		if($this->_devMode || !file_exists($modCache)) {
+			$this->_lastModifiedTime = time();
+		} elseif(file_exists($modCache) && filemtime($modCache) >= $this->_lastModifiedTime) {
 			$mods = file_get_contents($modCache);
 			$this->_mods = unserialize($mods);
 			return;
@@ -292,7 +295,7 @@ final class VQMod {
 		}
 
 		if(is_dir($path)) {
-			$path = rtrim($path, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR;
+			$path = rtrim($path, $this->directorySeparator) . $this->directorySeparator;
 		}
 
 		return $path;
@@ -309,10 +312,15 @@ final class VQMod {
 	private function _checkMatch($modFilePath, $checkFilePath) {
 		$modFilePath = str_replace('\\', '/', $modFilePath);
 		$checkFilePath = str_replace('\\', '/', $checkFilePath);
-
-		$modFilePath = preg_replace('/([^*]+)/e', 'preg_quote("$1", "~")', $modFilePath);
-		$modFilePath = str_replace('*', '[^/]*', $modFilePath);
-		$return = (bool) preg_match('~^' . $modFilePath . '$~', $checkFilePath);
+		
+		if(strpos($modFilePath, '*') !== false) {
+			$modFilePath = preg_replace('/([^*]+)/e', 'preg_quote("$1", "~")', $modFilePath);
+			$modFilePath = str_replace('*', '[^/]*', $modFilePath);
+			$return = (bool) preg_match('~^' . $modFilePath . '$~', $checkFilePath);
+		} else {
+			$return = $modFilePath == $checkFilePath;
+		}
+		
 		return $return;
 
 	}
@@ -491,7 +499,20 @@ class VQModObject {
 		$tmp = $data;
 
 		foreach($mods as $mod) {
+			if($mod['ignoreif']) {
+				if($mod['ignoreif']->regex == 'true') {
+					if (preg_match($mod['ignoreif']->getContent(), $tmp)) {
+						continue;
+					}
+				} else {
+					if (strpos($tmp, $mod['ignoreif']->getContent()) !== false) {
+						continue;
+					}
+				}
+			}
+			
 			$indexCount = 0;
+			
 			$tmp = $this->_explodeData($tmp);
 			$lineMax = count($tmp) - 1;
 
@@ -607,40 +628,68 @@ class VQModObject {
 	 */
 	private function _parseMods(DOMNode $node){
 		$files = $node->getElementsByTagName('file');
+		
+		$replaces = array();
+		$replacesPath = $this->_vqmod->path('vqmod/pathReplaces.php');
+		if($replacesPath) {
+			include_once($replacesPath);
+		}
 
 		foreach($files as $file) {
-			$fileToMod = $file->getAttribute('name');
-			$error = ($file->hasAttribute('error')) ? $file->getAttribute('error') : 'log';
-			$fullPath = $this->_vqmod->path($fileToMod);
-
-			if(!$fullPath || !file_exists($fullPath)){
-				if(strpos($fileToMod, '*') !== false) {
-					$fullPath = $this->_vqmod->getCwd() . $fileToMod;
-				} else {
-					if ($error == 'log' || $error == 'abort') {
-						$skip = ($error == 'log') ? ' (SKIPPED)' : ' (ABORTING MOD)';
-						$this->_vqmod->log->write('Could not resolve path for [' . $fileToMod . ']' . $skip, $this);
-					}
-
-					if ($error == 'log' || $error == 'skip') {
-						continue;
-					} elseif ($error == 'abort') {
-						return false;
+			$path = $file->getAttribute('path') ? $file->getAttribute('path') : '';
+			$filesToMod = explode(',', $file->getAttribute('name'));
+			
+			foreach($filesToMod as $filename) {
+				
+				$fileToMod = $path . $filename;
+				if(!empty($replaces)) {
+					foreach($replaces as $r) {
+						if(count($r) == 2) {
+							$fileToMod = preg_replace($r[0], $r[1], $fileToMod);
+						}
 					}
 				}
-			}
-
-			$operations = $file->getElementsByTagName('operation');
-
-			foreach($operations as $operation) {
-
-				$error = ($operation->hasAttribute('error')) ? $operation->getAttribute('error') : 'abort';
-
-				$this->mods[$fullPath][] = array(
-					'search' 		=> new VQSearchNode($operation->getElementsByTagName('search')->item(0)),
-					'add' 			=> new VQAddNode($operation->getElementsByTagName('add')->item(0)),
-					'error'		 	=> $error
-				);
+				
+				$error = ($file->hasAttribute('error')) ? $file->getAttribute('error') : 'log';
+				$fullPath = $this->_vqmod->path($fileToMod);
+	
+				if(!$fullPath || !file_exists($fullPath)){
+					if(strpos($fileToMod, '*') !== false) {
+						$fullPath = $this->_vqmod->getCwd() . $fileToMod;
+					} else {
+						if ($error == 'log' || $error == 'abort') {
+							$skip = ($error == 'log') ? ' (SKIPPED)' : ' (ABORTING MOD)';
+							$this->_vqmod->log->write('Could not resolve path for [' . $fileToMod . ']' . $skip, $this);
+						}
+	
+						if ($error == 'log' || $error == 'skip') {
+							continue;
+						} elseif ($error == 'abort') {
+							return false;
+						}
+					}
+				}
+	
+				$operations = $file->getElementsByTagName('operation');
+	
+				foreach($operations as $operation) {
+					$error = ($operation->hasAttribute('error')) ? $operation->getAttribute('error') : 'abort';
+					$ignoreif = $operation->getElementsByTagName('ignoreif')->item(0);
+					
+					if($ignoreif) {
+						$ignoreif = new VQSearchNode($ignoreif);
+					} else {
+						$ignoreif = false;
+					}
+					
+					
+					$this->mods[$fullPath][] = array(
+						'search' 		=> new VQSearchNode($operation->getElementsByTagName('search')->item(0)),
+						'add' 			=> new VQAddNode($operation->getElementsByTagName('add')->item(0)),
+						'ignoreif'		=> $ignoreif,
+						'error'		 	=> $error
+					);
+				}
 			}
 		}
 	}
