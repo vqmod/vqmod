@@ -4,7 +4,7 @@
  * @description Main Object used
  */
 final class VQMod {
-	private $_vqversion = '2.3.0';
+	private $_vqversion = '2.3.1';
 	private $_modFileList = array();
 	private $_mods = array();
 	private $_filesModded = array();
@@ -19,6 +19,7 @@ final class VQMod {
 	public $vqCachePath = 'vqmod/vqcache/';
 	public $modCache = 'vqmod/mods.cache';
 	public $protectedFilelist = 'vqmod/vqprotect.txt';
+	public $pathReplaces = 'vqmod/pathReplaces.php';
 	public $logging = true;
 	public $log;
 	public $fileModding = false;
@@ -46,7 +47,15 @@ final class VQMod {
 
 		$this->logging = (bool) $logging;
 		$this->log = new VQModLog($this);
-
+		
+		$replacesPath = $this->path($this->pathReplaces);
+		$replaces = array();
+		if($replacesPath) {
+			include_once($replacesPath);
+			$this->_lastModifiedTime = filemtime($replacesPath);
+		}
+		
+		$this->_replaces = !is_array($replaces) ? array() : $replaces;
 		$this->_getMods();
 		$this->_loadProtected();
 	}
@@ -84,7 +93,7 @@ final class VQMod {
 			$sourcePath = $this->_realpath($sourceFile);
 		}
 
-		if(!$sourcePath || !file_exists($sourcePath) || is_dir($sourcePath) || in_array($sourcePath, $this->_doNotMod)) {
+		if(!$sourcePath || is_dir($sourcePath) || in_array($sourcePath, $this->_doNotMod)) {
 			return $sourceFile;
 		}
 
@@ -175,7 +184,7 @@ final class VQMod {
 	 */
 	private function _getMods() {
 
-		$this->_modFileList = glob($this->path('vqmod/xml/') . '*.xml');
+		$this->_modFileList = glob($this->path('vqmod/xml/', true) . '*.xml');
 
 		foreach($this->_modFileList as $file) {
 			if(file_exists($file)) {
@@ -196,8 +205,11 @@ final class VQMod {
 			$this->_lastModifiedTime = time();
 		} elseif(file_exists($modCache) && filemtime($modCache) >= $this->_lastModifiedTime) {
 			$mods = file_get_contents($modCache);
+			if(!empty($mods))
 			$this->_mods = unserialize($mods);
-			return;
+			if($this->_mods !== false) {
+				return;
+			}
 		}
 
 		if($this->_modFileList) {
@@ -291,7 +303,7 @@ final class VQMod {
 	private function _realpath($file) {
 		$path = realpath($file);
 		if(!file_exists($path)) {
-			return $file;
+			return false;
 		}
 
 		if(is_dir($path)) {
@@ -499,7 +511,7 @@ class VQModObject {
 		$tmp = $data;
 
 		foreach($mods as $mod) {
-			if($mod['ignoreif']) {
+			if(!empty($mod['ignoreif'])) {
 				if($mod['ignoreif']->regex == 'true') {
 					if (preg_match($mod['ignoreif']->getContent(), $tmp)) {
 						continue;
@@ -629,11 +641,7 @@ class VQModObject {
 	private function _parseMods(DOMNode $node){
 		$files = $node->getElementsByTagName('file');
 		
-		$replaces = array();
-		$replacesPath = $this->_vqmod->path('vqmod/pathReplaces.php');
-		if($replacesPath) {
-			include_once($replacesPath);
-		}
+		$replaces = $this->_vqmod->_replaces;
 
 		foreach($files as $file) {
 			$path = $file->getAttribute('path') ? $file->getAttribute('path') : '';
