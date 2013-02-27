@@ -4,7 +4,7 @@
  * @description Main Object used
  */
 final class VQMod {
-	private $_vqversion = '2.3.1';
+	private $_vqversion = '2.3.2';
 	private $_modFileList = array();
 	private $_mods = array();
 	private $_filesModded = array();
@@ -241,7 +241,7 @@ final class VQMod {
 			}
 		}
 
-		$modCache = $this->path($this->modCache);
+		$modCache = $this->path($this->modCache, true);
 		$result = file_put_contents($modCache, serialize($this->_mods));
 		if(!$result) {
 			die('MODS CACHE PATH NOT WRITEABLE');
