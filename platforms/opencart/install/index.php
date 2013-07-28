@@ -1,34 +1,36 @@
 <?php
 
 /**
- * UGRSR
- * 
+ *
  * @package Simple vQmod OpenCart install script
  * @author Jay Gilford - http://jaygilford.com/
  * @copyright Jay Gilford 2011
- * @version 0.3
+ * @version 0.4
  * @access public
- * 
+ *
  * @information
  * This file will perform all necessary file alterations for the
  * OpenCart index.php files both in the root directory and in the
  * Administration folder. Please note that if you have changed your
  * default folder name from admin to something else, you will need
  * to edit the admin/index.php in this file to install successfully
- * 
+ *
  * @license
  * Permission is hereby granted, free of charge, to any person to
  * use, copy, modify, distribute, sublicense, and/or sell copies
  * of the Software, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be
  * included in all copies or substantial portions of the Software
- * 
+ *
  * @warning
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
  * EXPRESSED OR IMPLIED.
- *  
+ *
  */
+
+// CHANGE THIS IF YOU EDIT YOUR ADMIN FOLDER NAME
+$admin = 'admin';
 
 // Counters
 $changes = 0;
@@ -47,7 +49,7 @@ $write_errors = array();
 if(!is_writeable($opencart_path . 'index.php')) {
 	$write_errors[] = 'index.php not writeable';
 }
-if(!is_writeable($opencart_path . 'admin/index.php')) {
+if(!is_writeable($opencart_path . $admin . '/index.php')) {
 	$write_errors[] = 'Administrator index.php not writeable';
 }
 
@@ -64,13 +66,32 @@ $u = new UGRSR($opencart_path);
 // Set file searching to off
 $u->file_search = false;
 
-// Add both index files to files to include
+// Attempt upgrade if necessary. Otherwise just continue with normal install
+$u->addFile('index.php');
+$u->addFile($admin . '/index.php');
+
+$u->addPattern('~\$vqmod->~', 'VQMod::');
+$u->addPattern('~\$vqmod = new VQMod\(\);~', 'VQMod::bootup();');
+
+$result = $u->run();
+
+if($result['writes'] > 0) {
+	if(file_exists('../mods.cache')) {
+		unlink('../mods.cache');
+	}
+	die('UPGRADE COMPLETE');
+}
+
+$u->clearPatterns();
+$u->resetFileList();
+
+// Add catalog index files to files to include
 $u->addFile('index.php');
 
-// Pattern to add vqmod include 
+// Pattern to add vqmod include
 $u->addPattern('~// Startup~', '// VirtualQMOD
 require_once(\'./vqmod/vqmod.php\');
-$vqmod = new VQMod();
+VQMod::bootup();
 
 // VQMODDED Startup');
 
@@ -81,14 +102,13 @@ $changes += $result['changes'];
 $u->clearPatterns();
 $u->resetFileList();
 
-// Rename the admin part of the text below if you've
-// changed your admin folder name
-$u->addFile('admin/index.php');
+// Add Admin index file
+$u->addFile($admin . '/index.php');
 
-// Pattern to add vqmod include 
+// Pattern to add vqmod include
 $u->addPattern('~// Startup~', '//VirtualQMOD
 require_once(\'../vqmod/vqmod.php\');
-$vqmod = new VQMod();
+VQMod::bootup();
 
 // VQMODDED Startup');
 
@@ -100,7 +120,7 @@ $changes += $result['changes'];
 $u->addFile('index.php');
 
 // Pattern to run required files through vqmod
-$u->addPattern('/require_once\(DIR_SYSTEM \. \'([^\']+)\'\);/', 'require_once($vqmod->modCheck(DIR_SYSTEM . \'$1\'));');
+$u->addPattern('/require_once\(DIR_SYSTEM \. \'([^\']+)\'\);/', 'require_once(VQMod::modCheck(DIR_SYSTEM . \'$1\'));');
 
 // Get number of changes during run
 $result = $u->run();

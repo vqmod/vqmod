@@ -1,80 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
 <modification>
 	<id>VQMOD CORE FOR OPENCART - DO NOT REMOVE</id>
 	<version>1.4.x and 1.5.x</version>
-	<vqmver>2.X</vqmver>
+	<vqmver required="true">2.4.0</vqmver>
 	<author>vqmod.com</author>
-	<file name="system/startup.php">
-		<operation>
-			<search position="replace" regex="true"><![CDATA[~require_once\(([^)]+)~]]></search>
-			<add><![CDATA[require_once($vqmod->modCheck($1)]]></add>
-		</operation>
-	</file>
-
-	<file name="system/engine/controller.php">
-		<operation error="skip">
-			<search position="replace"><![CDATA[$action->getFile()]]></search>
-			<add><![CDATA[$vqmod->modCheck($action->getFile())]]></add>
-		</operation>
-		<operation error="skip">
-			<search position="before" index="1"><![CDATA[$vqmod->modCheck($action->getFile()]]></search>
-			<add><![CDATA[		global $vqmod;]]></add>
-		</operation>
-		<operation error="skip"><!-- v1.5.3 -->
-			<search position="before"><![CDATA[if (file_exists($file))]]></search>
-			<add><![CDATA[global $vqmod; $file = $vqmod->modCheck($file);]]></add>
-		</operation>
-		<operation error="skip"><!-- v1.5.x only -->
-			<search position="replace"><![CDATA[if (file_exists(DIR_TEMPLATE . $this->template)) {]]></search>
-			<add><![CDATA[
-		global $vqmod;
-		$file = $vqmod->modCheck(DIR_TEMPLATE . $this->template);
-		if (file_exists($file)) {
-		]]></add>
-		</operation>
-		<operation error="skip"><!-- v1.5.x only -->
-			<search position="replace"><![CDATA[exit('Error: Could not load template ' . DIR_TEMPLATE . $this->template . '!');]]></search>
-			<add trim="true"><![CDATA[
-			exit('Error: Could not load template ' . $file . '!');
-			]]></add>
-		</operation>
-		<operation error="skip"><!-- v1.5.x only -->
-			<search position="replace"><![CDATA[require(DIR_TEMPLATE . $this->template);]]></search>
-			<add trim="true"><![CDATA[
-			require($file);
-			]]></add>
-		</operation>
-	</file>
-
-	<file name="system/engine/front.php">
-		<operation error="skip">
-			<search position="replace"><![CDATA[$action->getFile()]]></search>
-			<add><![CDATA[$vqmod->modCheck($action->getFile())]]></add>
-		</operation>
-		<operation error="skip">
-			<search position="before" index="1"><![CDATA[$vqmod->modCheck($action->getFile()]]></search>
-			<add><![CDATA[		global $vqmod;]]></add>
-		</operation>
-	</file>
-
-	<file name="system/engine/loader.php">
-		<operation>
-			<search position="before"><![CDATA[if (file_exists($file)) {]]></search>
-			<add><![CDATA[global $vqmod; $file = $vqmod->modCheck($file);]]></add>
-		</operation>
-	</file>
 	
-	<file name="system/library/language.php">
+	<file path="system/" name="startup.php,engine/*.php,library/*.php">
 		<operation error="skip">
-			<search position="replace" regex="true"><![CDATA[~require\((\$default|\$file)\);~]]></search>
-			<add><![CDATA[global $vqmod;
-			require($vqmod->modCheck($1));]]></add>
-		</operation>
-	</file>
-	
-	<file name="system/library/template.php">
-		<operation>
-			<search position="before"><![CDATA[file_exists($file)]]></search>
-			<add><![CDATA[global $vqmod; $file = $vqmod->modCheck($file);]]></add>
+			<search position="replace" regex="true"><![CDATA[~(require|include)(_once)?\(([^)]+)~]]></search>
+			<add><![CDATA[$1$2(VQMod::modCheck($3)]]></add>
 		</operation>
 	</file>
 
