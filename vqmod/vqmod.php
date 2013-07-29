@@ -4,7 +4,7 @@
  * @description Main Object used
  */
 abstract class VQMod {
-	public static $_vqversion = '2.4.0';
+	public static $_vqversion = '2.4.1';
 	
 	private static $_modFileList = array();
 	private static $_mods = array();
@@ -14,7 +14,7 @@ abstract class VQMod {
 	private static $_folderChecks = false;
 	private static $_cachePathFull = '';
 	private static $_lastModifiedTime = 0;
-	private static $_devMode = true;
+	private static $_devMode = false;
 
 	public static $logFolder = 'vqmod/logs/';
 	public static $vqCachePath = 'vqmod/vqcache/';
@@ -349,7 +349,7 @@ abstract class VQMod {
 		}
 		
 		if(strpos($modFilePath, '*') !== false) {
-			$modFilePath = preg_replace_callback('~([^*]+)~', 'self::_quotePath', $modFilePath);
+			$modFilePath = preg_replace_callback('~([^*]+)~', array('self', '_quotePath'), $modFilePath);
 			$modFilePath = str_replace('*', '[^/]*', $modFilePath);
 			$return = (bool) preg_match('~^' . $modFilePath . '$~', $checkFilePath);
 		} else {
