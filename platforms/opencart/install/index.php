@@ -3,9 +3,9 @@
 /**
  *
  * @package Simple vQmod OpenCart install script
- * @author Jay Gilford - http://jaygilford.com/
+ * @author Jay Gilford - http://vqmod.com/
  * @copyright Jay Gilford 2011
- * @version 0.4
+ * @version 0.5
  * @access public
  *
  * @information
@@ -43,7 +43,7 @@ require('ugrsr.class.php');
 $opencart_path = realpath(dirname(__FILE__) . '/../../') . '/';
 
 // Verify path is correct
-if(!$opencart_path) die('COULD NOT DETERMINE CORRECT FILE PATH');
+if(empty($opencart_path)) die('ERROR - COULD NOT DETERMINE OPENCART PATH CORRECTLY - ' . dirname(__FILE__));
 
 $write_errors = array();
 if(!is_writeable($opencart_path . 'index.php')) {

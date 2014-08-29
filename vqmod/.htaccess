@@ -1,7 +1,2 @@
-# Prevent Directoy listing 
-Options -Indexes
-
-<FilesMatch "\.(xml|cache)">
 Order deny,allow
 Deny from all
-</FilesMatch>
