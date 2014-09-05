@@ -4,7 +4,7 @@
  * @description Main Object used
  */
 abstract class VQMod {
-	public static $_vqversion = '2.5.0';						// Current version number
+	public static $_vqversion = '2.5.1';						// Current version number
 
 	private static $_modFileList = array();						// Array of xml files
 	private static $_mods = array();							// Array of modifications to apply
