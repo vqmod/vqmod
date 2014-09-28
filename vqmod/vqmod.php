@@ -17,6 +17,7 @@ abstract class VQMod {
 	private static $_devMode = false;							// Flag for developer mode - disables caching while true
 
 	public static $logFolder = 'vqmod/logs/';					// Path log folders are stored in
+	public static $loadOrder = 'vqmod/order';					// Path log folders are stored in
 	public static $vqCachePath = 'vqmod/vqcache/';				// Relative path to cache file directory
 	public static $modCache = 'vqmod/mods.cache';				// Relative path to serialized mods array cache file
 	public static $checkedCache = 'vqmod/checked.cache';		// Relative path to already checked files array cache file
@@ -264,9 +265,17 @@ abstract class VQMod {
 	 * @description Loops through xml files and attempts to load them as VQModObject's
 	 */
 	private static function _parseMods() {
+		
 
 		set_error_handler(array('VQMod', 'handleXMLError'));
-
+		
+		if(file_exists(self::$loadOrder)){
+		$xml = simplexml_load_string(self::$loadOrder);
+		$json = json_encode($xml);
+		$order = json_decode($json,TRUE);
+			//flip keys and compare, resort self::$loadOrder
+		}
+		
 		$dom = new DOMDocument('1.0', 'UTF-8');
 		foreach(self::$_modFileList as $modFileKey => $modFile) {
 			if(file_exists($modFile)) {
