@@ -17,7 +17,7 @@ abstract class VQMod {
 	private static $_devMode = false;							// Flag for developer mode - disables caching while true
 
 	public static $logFolder = 'vqmod/logs/';					// Path log folders are stored in
-	public static $loadOrder = 'vqmod/order';					// Path log folders are stored in
+	public static $loadOrder = 'vqmod/vqcache/order.cache';					// Path load order file located
 	public static $vqCachePath = 'vqmod/vqcache/';				// Relative path to cache file directory
 	public static $modCache = 'vqmod/mods.cache';				// Relative path to serialized mods array cache file
 	public static $checkedCache = 'vqmod/checked.cache';		// Relative path to already checked files array cache file
@@ -270,10 +270,16 @@ abstract class VQMod {
 		set_error_handler(array('VQMod', 'handleXMLError'));
 		
 		if(file_exists(self::$loadOrder)){
-		$xml = simplexml_load_string(self::$loadOrder);
-		$json = json_encode($xml);
-		$order = json_decode($json,TRUE);
-			//flip keys and compare, resort self::$loadOrder
+		$cachedloadorder = file(self::$loadOrder, FILE_IGNORE_NEW_LINES);
+		$curentloadorder = self::$_modFileList;
+		
+		$cachedloadorderflipped = array_flip($cachedloadorder);
+		$currentloadorderflipped = array_flip($curentloadorder);
+		
+		$uncachedmods = array_diff(array_keys($cachedloadorderflipped), array_keys($currentloadorderflipped));
+		$loadorder=array_merge($cachedloadorder,$uncachedmods);
+		
+		self::$_modFileList = $loadorder;
 		}
 		
 		$dom = new DOMDocument('1.0', 'UTF-8');
