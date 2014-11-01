@@ -4,7 +4,7 @@
  * @description Main Object used
  */
 abstract class VQMod {
-	public static $_vqversion = '2.5.1';						// Current version number
+	public static $_vqversion = '2.5.2';						// Current version number
 
 	private static $_modFileList = array();						// Array of xml files
 	private static $_mods = array();							// Array of modifications to apply
@@ -375,8 +375,13 @@ abstract class VQMod {
 	 * @description Returns real path of any path, adding directory slashes if necessary
 	 */
 	private static function _realpath($file) {
-		$path = realpath($file);
-		if(!$path) {
+		if(is_executable($file)) {
+			$path = realpath($file);
+		} else {
+			$path = $file;
+		}
+		
+		if(!file_exists($path)) {
 			return false;
 		}
 
