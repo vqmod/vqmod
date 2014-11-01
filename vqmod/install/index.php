@@ -5,7 +5,7 @@
  * @package Simple vQmod OpenCart install script
  * @author Jay Gilford - http://vqmod.com/
  * @copyright Jay Gilford 2011
- * @version 0.5
+ * @version 1.0
  * @access public
  *
  * @information
@@ -40,7 +40,7 @@ $writes = 0;
 require('ugrsr.class.php');
 
 // Get directory two above installation directory
-$opencart_path = realpath(dirname(__FILE__) . '/../../') . '/';
+$opencart_path = realpath(dirname(__FILE__) . '/../../') . DIRECTORY_SEPARATOR;
 
 // Verify path is correct
 if(empty($opencart_path)) die('ERROR - COULD NOT DETERMINE OPENCART PATH CORRECTLY - ' . dirname(__FILE__));
@@ -60,8 +60,9 @@ if(!empty($write_errors)) {
 // Create new UGRSR class
 $u = new UGRSR($opencart_path);
 
-// remove the # before this to enable debugging info
+// remove the # before these to enable debugging and test modes
 #$u->debug = true;
+#$u->test_mode = true;
 
 // Set file searching to off
 $u->file_search = false;
