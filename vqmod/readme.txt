@@ -1,5 +1,5 @@
 -----------------------------------------
-vQmodâ„¢ - Virtual File Modification System
+vQmod™ - Virtual File Modification System
 -----------------------------------------
 
 ABOUT:
@@ -18,7 +18,4 @@ substituted for the real file in the include path.
 ==========================================================
 See website for additional information, usage, and syntax:
 http://vqmod.com
-
-See website for OpenCart Install information
-http://code.google.com/p/vqmod/wiki/Install_OpenCart
 ==========================================================
