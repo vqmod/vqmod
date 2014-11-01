@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<modification>
+	<id>VQMOD CORE FOR OPENCART - DO NOT REMOVE</id>
+	<version>1.4.x and above</version>
+	<vqmver required="true">2.5.0</vqmver>
+	<author>vqmod.com</author>
+	
+	<file name="system/startup.php,system/engine/*.php,system/library/*.php,admin/controller/extension/*.php">
+		<operation error="skip" info="For non OCMod includes/requires">
+			<search position="replace" regex="true"><![CDATA[~(require|include)(_once)?\((?!modification\()([^)]+)~]]></search>
+			<add><![CDATA[$1$2(VQMod::modCheck($3)]]></add>
+		</operation>
+		<operation error="skip" info="For OCMod includes/requires - OPERATION MUST BE AFTER NON OCMOD INCLUDES/REQUIRES OPERATION">
+			<search position="replace" regex="true"><![CDATA[~(require|include)(_once)?\(modification\(([^)]+)~]]></search>
+			<add><![CDATA[$1$2(VQMod::modCheck(modification($3), $3]]></add>
+		</operation>
+	</file>
+
+</modification>
