@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema version="1.0"
+           xmlns:xs="http://www.w3.org/2001/XMLSchema"
+           targetNamespace="https://github.com/vqmod/vqmod"
+           elementFormDefault="qualified">
+    <xs:element name="modification">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:choice minOccurs="0" maxOccurs="unbounded">
+                    <xs:element name="id" minOccurs="1" maxOccurs="1"/>
+                    <xs:element name="version" minOccurs="1" maxOccurs="1"/>                    
+                    <xs:element name="vqmver" minOccurs="1" maxOccurs="1"/>                    
+                    <xs:element name="author" minOccurs="1" maxOccurs="1"/>                    
+                    
+                    <xs:element name="file" minOccurs="0" maxOccurs="1">
+                        <xs:complexType>
+                            <xs:sequence>
+                                <xs:element name="operation" minOccurs="0" maxOccurs="unbounded">                                    
+                                    <xs:complexType mixed="true">                                                                               
+                                        <xs:sequence>                                            
+                                            <xs:element name="search" minOccurs="0" maxOccurs="1">                                                
+                                                <xs:complexType mixed="true">
+                                                    <xs:attribute name="position" use="required">
+                                                        <xs:simpleType>
+                                                            <xs:restriction base="xs:string">
+                                                                <xs:enumeration value="replace"/>
+                                                                <xs:enumeration value="after"/>
+                                                                <xs:enumeration value="before"/>
+                                                                <xs:enumeration value="top"/>
+                                                                <xs:enumeration value="bottom"/>
+                                                                <xs:enumeration value="ibefore"/>
+                                                                <xs:enumeration value="iafter"/>
+                                                            </xs:restriction>
+                                                        </xs:simpleType>                                                        
+                                                    </xs:attribute>
+                                                    <xs:attribute name="offset" use="optional">
+                                                        <xs:simpleType>
+                                                            <xs:restriction base="xs:integer">
+                                                                <xs:minInclusive value="0"/>
+                                                            </xs:restriction>
+                                                        </xs:simpleType>
+                                                    </xs:attribute>
+                                                    <xs:attribute name="index" use="optional" type="xs:string"/>
+                                                    <xs:attribute name="regex" use="optional" type="xs:string"/>
+                                                    <xs:attribute name="trim" use="optional" type="xs:boolean"/>
+                                                </xs:complexType>
+                                            </xs:element>
+                                            <xs:element name="add" minOccurs="0" maxOccurs="1">
+                                                <xs:complexType mixed="true">
+                                                    <xs:attribute name="trim" use="optional" type="xs:boolean"/>
+                                                </xs:complexType>
+                                            </xs:element>
+                                            <xs:choice>
+                                                <xs:element name="ignoreif" minOccurs="0">
+                                                    <xs:complexType>
+                                                        <xs:attribute name="regex" use="optional" type="xs:boolean"/>
+                                                    </xs:complexType>
+                                                </xs:element>
+                                            </xs:choice>
+                                        </xs:sequence>
+                                        <xs:attribute name="info" use="optional" type="xs:string"/>
+                                        <xs:attribute name="error" use="optional">
+                                            <xs:simpleType>
+                                                <xs:restriction base="xs:string">
+                                                    <xs:enumeration value="skip"/>
+                                                    <xs:enumeration value="log"/>
+                                                    <xs:enumeration value="abort"/>
+                                                </xs:restriction>
+                                            </xs:simpleType>
+                                        </xs:attribute>
+                                    </xs:complexType>
+                                </xs:element>
+                            </xs:sequence>
+                            <xs:attribute name="name" type="xs:string" use="required"/>
+                            <xs:attribute name="path" type="xs:string" use="optional"/>
+                            <xs:attribute name="error" use="optional">
+                                <xs:simpleType>
+                                    <xs:restriction base="xs:string">
+                                        <xs:enumeration value="skip"/>
+                                        <xs:enumeration value="log"/>
+                                        <xs:enumeration value="abort"/>
+                                    </xs:restriction>
+                                </xs:simpleType>
+                            </xs:attribute>
+                        </xs:complexType>
+                    </xs:element>
+                </xs:choice>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+</xs:schema>
