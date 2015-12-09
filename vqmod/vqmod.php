@@ -375,13 +375,8 @@ abstract class VQMod {
 	 * @description Returns real path of any path, adding directory slashes if necessary
 	 */
 	private static function _realpath($file) {
-		if(is_executable($file)) {
-			$path = realpath($file);
-		} else {
-			$path = $file;
-		}
-		
-		if(!file_exists($path)) {
+		$path = realpath($file);
+		if(!$path) {
 			return false;
 		}
 
@@ -415,13 +410,13 @@ abstract class VQMod {
 			$return = true;
 			$modParts = explode('/', $modFilePath);
 			$checkParts = explode('/', $checkFilePath);
-			
+
 			if(count($modParts) !== count($checkParts)) {
 				 $return = false;
 			} else {
 
 				$toCheck = array_diff_assoc($modParts, $checkParts);
-				
+
 				foreach($toCheck as $k => $part) {
 					if($part === '*') {
 						continue;
@@ -649,11 +644,12 @@ class VQModObject {
 			// OCMod Compatibility - Override Search attributes with Add attributes if set
 			foreach(array_keys((array)$mod['search']) as $key) {
 				if ($key == "\x0VQNode\x0_content") { continue; }
+				if ($key == "trim") { continue; }
 				if (isset($mod['add']->$key) && $mod['add']->$key) {
 					$mod['search']->$key = $mod['add']->$key;
 				}
 			}
-			
+
 			switch($mod['search']->position) {
 				case 'top':
 				$tmp[$mod['search']->offset] =  $mod['add']->getContent() . $tmp[$mod['search']->offset];
@@ -890,9 +886,8 @@ class VQModObject {
  * @description Basic node object blueprint
  */
 class VQNode {
-	public $trim = 'false';
 	public $regex = 'false';
-	
+
 	private $_content = '';
 
 	/**
