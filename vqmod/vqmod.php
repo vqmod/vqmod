@@ -4,7 +4,7 @@
  * @description Main Object used
  */
 abstract class VQMod {
-	public static $_vqversion = '2.5.2';						// Current version number
+	public static $_vqversion = '2.6.0';						// Current version number
 
 	private static $_modFileList = array();						// Array of xml files
 	private static $_mods = array();							// Array of modifications to apply
@@ -646,6 +646,14 @@ class VQModObject {
 			$tmp = $this->_explodeData($tmp);
 			$lineMax = count($tmp) - 1;
 
+			// OCMod Compatibility - Override Search attributes with Add attributes if set
+			foreach(array_keys((array)$mod['search']) as $key) {
+				if ($key == "\x0VQNode\x0_content") { continue; }
+				if (isset($mod['add']->$key) && $mod['add']->$key) {
+					$mod['search']->$key = $mod['add']->$key;
+				}
+			}
+			
 			switch($mod['search']->position) {
 				case 'top':
 				$tmp[$mod['search']->offset] =  $mod['add']->getContent() . $tmp[$mod['search']->offset];
@@ -820,7 +828,7 @@ class VQModObject {
 					$ignoreif = $operation->getElementsByTagName('ignoreif')->item(0);
 
 					if($ignoreif) {
-						$ignoreif = new VQSearchNode($ignoreif);
+						$ignoreif = new VQNode($ignoreif);
 					} else {
 						$ignoreif = false;
 					}
@@ -883,7 +891,8 @@ class VQModObject {
  */
 class VQNode {
 	public $trim = 'false';
-
+	public $regex = 'false';
+	
 	private $_content = '';
 
 	/**
@@ -955,4 +964,9 @@ class VQSearchNode extends VQNode {
  * @description Object for the <add> xml tags
  */
 class VQAddNode extends VQNode {
+	public $position = false;
+	public $offset = false;
+	public $index = false;
+	public $regex = false;
+	public $trim = 'false';
 }
