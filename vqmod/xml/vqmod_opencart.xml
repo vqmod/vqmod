@@ -5,14 +5,28 @@
     <vqmver required="true">2.6.0</vqmver>
     <author>vqmod.com</author>
 
-    <file name="system/startup.php,system/engine/*.php,system/library/*.php,admin/controller/extension/*.php,system/library/template/*.php">
+    <file name="system/startup.php,system/engine/*.php,system/library/*.php,admin/controller/extension/*.php,system/library/template/*.php,catalog/controller/event/theme.php,system/library/template/Twig/*.php" error="skip">
         <operation error="skip" info="For non OCMod includes/requires">
-            <search position="replace" regex="true"><![CDATA[~(require|include)(_once)?\((?!VQMod::modCheck\()(?!modification\()([^)]+)~]]></search>
-            <add><![CDATA[$1$2(\\VQMod::modCheck($3)]]></add>
+            <search position="replace" regex="true"><![CDATA[~^(\s*)(require|include)(_once)?(\s+|\()(?!VQMod::modCheck\()(?!modification\()([^);]+)~]]></search>
+            <add><![CDATA[$1$2$3$4\\VQMod::modCheck($5)]]></add>
         </operation>
         <operation error="skip" info="For OCMod includes/requires - OPERATION MUST BE AFTER NON OCMOD INCLUDES/REQUIRES OPERATION">
             <search position="replace" regex="true"><![CDATA[~(require|include)(_once)?\((?!VQMod::modCheck\()modification\(([^)]+)~]]></search>
             <add><![CDATA[$1$2(\\VQMod::modCheck(modification($3), $3]]></add>
+        </operation>
+	</file>
+
+    <file name="system/library/template/Twig/*.php" error="skip">
+	    <operation error="skip" info="Add Twig support">
+            <search position="replace"><![CDATA[dirname(__FILE__).'/../']]></search>
+            <add><![CDATA[DIR_SYSTEM . 'library/template/']]></add>
+        </operation>
+    </file>
+
+    <file name="system/library/template/Twig/Loader/*.php" error="skip">
+	    <operation error="skip" info="Add Twig support">
+            <search position="replace"><![CDATA[= $realpath;]]></search>
+            <add><![CDATA[= VQMod::modCheck($realpath);]]></add>
         </operation>
     </file>
 
