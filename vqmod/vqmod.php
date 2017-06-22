@@ -117,7 +117,7 @@ abstract class VQMod {
 			return $sourceFile;
 		}
 
-		$stripped_filename = preg_replace('~^' . preg_quote(self::getCwd(), '~') . '~i', '', $sourcePath);
+		$stripped_filename = preg_replace('~^' . preg_quote(self::getCwd(), '~i') . '~', '', $sourcePath);
 		$cacheFile = self::_cacheName($stripped_filename);
 		$file_last_modified = filemtime($sourcePath);
 
