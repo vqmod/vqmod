@@ -26,7 +26,7 @@
     <file name="system/library/template/Twig/Loader/*.php" error="skip">
 	    <operation error="skip" info="Add Twig support">
             <search position="replace"><![CDATA[= $realpath;]]></search>
-            <add><![CDATA[= VQMod::modCheck($realpath);]]></add>
+            <add><![CDATA[= VQMod::modCheck($realpath, DIR_TEMPLATE . $name);]]></add>
         </operation>
     </file>
 
