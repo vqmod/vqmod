@@ -1,0 +1,8 @@
+{
+    "name": "vqmod/opencart",
+    "description": "Virtual Quick Mod is an override system designed to avoid having to change core files.",
+    "type": "library",
+    "require": {
+        "php": ">=5.4.0"
+    }
+}
