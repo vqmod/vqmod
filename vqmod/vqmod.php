@@ -4,7 +4,7 @@
  * @description Main Object used
  */
 abstract class VQMod {
-	public static $_vqversion = '2.6.2';						// Current version number
+	public static $_vqversion = '2.6.4';						// Current version number
 
 	private static $_modFileList = array();						// Array of xml files
 	private static $_mods = array();							// Array of modifications to apply
@@ -681,7 +681,7 @@ class VQModObject {
 							if($mod['error'] == 'log' || $mod['error'] == 'abort' ) {
 								VQMod::$log->write('VQModObject::applyMod - INVALID REGEX ERROR - ' . $mod['search']->getContent(), $this);
 							}
-							continue 2;
+							break 2;
 						} elseif($pos == 0) {
 							$pos = false;
 						}
