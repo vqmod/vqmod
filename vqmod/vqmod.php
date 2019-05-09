@@ -681,7 +681,7 @@ class VQModObject {
 							if($mod['error'] == 'log' || $mod['error'] == 'abort' ) {
 								VQMod::$log->write('VQModObject::applyMod - INVALID REGEX ERROR - ' . $mod['search']->getContent(), $this);
 							}
-							continue 2;
+							break 2;
 						} elseif($pos == 0) {
 							$pos = false;
 						}
