@@ -861,7 +861,7 @@ class VQModObject {
 	/**
 	 * VQModObject::_explodeData()
 	 *
-	 * @param string $data File contents
+	 * @param string $data file contents
 	 * @return string
 	 * @description Splits a file into an array of individual lines
 	 */
