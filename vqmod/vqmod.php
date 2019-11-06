@@ -166,6 +166,15 @@ abstract class VQMod {
 	 */
 	public static function path($path, $skip_real = false) {
 		$tmp = self::$_cwd . $path;
+		// This path() function expects $path to be relative.  If the www-storage dir is not
+		// under DOCUMENT_ROOT, however, $path might be absolute.  In this case, the default behavior
+		// of blindly appending a prefix to $path is wrong.  I think this case comes up when there is
+		// a VQMOD on top of an OCMOD.
+		// Without this fix, the "checked.cache" file grows continuously as absolute paths never register
+		// a cache hit (since the path is corrupt) and the path is re-cached.
+		if (!is_file($tmp) && is_file($path)) {
+			$tmp = $path;
+		}
 		$realpath = $skip_real ? $tmp : self::_realpath($tmp);
 		if(!$realpath) {
 			return false;
