@@ -149,6 +149,9 @@ abstract class VQMod {
 			}
 		} else {
 			file_put_contents(self::path(self::$checkedCache, true), $stripped_filename . PHP_EOL, FILE_APPEND | LOCK_EX);
+			$lines = file(self::path(self::$checkedCache, true));
+			$lines = array_unique($lines);
+			file_put_contents(self::path(self::$checkedCache, true), implode($lines));
 			self::$_doNotMod[] = $sourcePath;
 		}
 
