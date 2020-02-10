@@ -336,7 +336,7 @@ abstract class VQMod {
 			$paths = file($file, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
 			if(!empty($paths)) {
 				foreach($paths as $path) {
-					$fullPath = self::path($path, true);
+					$fullPath = preg_match('%^([a-z]:)?[\\\\/]%i', $path) ? $path : self::path($path, true);
 					if($fullPath) {
 						self::$_doNotMod[] = $fullPath;
 					}
