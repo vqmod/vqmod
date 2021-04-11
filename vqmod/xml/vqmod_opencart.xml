@@ -29,5 +29,21 @@
             <add><![CDATA[= VQMod::modCheck($realpath, DIR_TEMPLATE . $name);]]></add>
         </operation>
     </file>
+	
+	<file path="system/library/template/twig.php" error="skip" info="fix Core Opencart twig files modification">
+        <operation error="skip">
+            <search><![CDATA[$file = DIR_TEMPLATE . $filename . '.twig';]]></search>
+            <add position="replace"><![CDATA[$file = modification( DIR_TEMPLATE . $filename . '.twig' );
+            if( class_exists('VQMod') ) {
+                $file = \VQMod::modCheck($file, DIR_TEMPLATE . $filename . '.twig');
+            }
+            ]]></add>
+        </operation>
+		
+		<operation error="skip" info="Disable forced use of modification files instead of letting the code go through the proper process (3.0.3.7)">
+            <search><![CDATA[view/]]></search>
+            <add trim="true" position="replace"><![CDATA[viewx/]]></add>
+        </operation>		
+    </file>
 
 </modification>
