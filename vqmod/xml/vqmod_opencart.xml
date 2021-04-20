@@ -41,8 +41,8 @@
         </operation>
 		
 		<operation error="skip" info="Disable forced use of modification files instead of letting the code go through the proper process (3.0.3.7)">
-            <search><![CDATA[view/]]></search>
-            <add trim="true" position="replace"><![CDATA[viewx/]]></add>
+            <search><![CDATA[is_file(DIR_MODIFICATION]]></search>
+            <add trim="true" position="replace"><![CDATA[is_file('x' . DIR_MODIFICATION]]></add>
         </operation>		
     </file>
 
