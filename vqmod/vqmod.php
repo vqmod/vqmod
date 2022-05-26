@@ -4,7 +4,8 @@
  * @description Main Object used
  */
 abstract class VQMod {
-	public static $_vqversion = '2.6.4';						// Current version number
+
+	public static $_vqversion = '2.6.7';						// Current version number
 
 	private static $_modFileList = array();						// Array of xml files
 	private static $_mods = array();							// Array of modifications to apply
@@ -149,6 +150,12 @@ abstract class VQMod {
 			}
 		} else {
 			file_put_contents(self::path(self::$checkedCache, true), $stripped_filename . PHP_EOL, FILE_APPEND | LOCK_EX);
+			
+			// Prevent checked.cache file from duplicating lines when checked folder is above vqmod directory - Thanks adrianolmedo
+			$lines = file(self::path(self::$checkedCache, true));
+			$lines = array_unique($lines);
+			file_put_contents(self::path(self::$checkedCache, true), implode($lines));
+			
 			self::$_doNotMod[] = $sourcePath;
 		}
 
