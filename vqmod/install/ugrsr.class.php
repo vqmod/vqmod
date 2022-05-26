@@ -5,8 +5,8 @@
  * 
  * @package Universal Global RegEx Search/Replace
  * @author Qphoria - http://theqdomain.com/ & Jay Gilford - http://jaygilford.com/
- * @copyright Qphoria & Jay Gilford 2011
- * @version 0.3
+ * @copyright Qphoria & Jay Gilford 2022
+ * @version 0.4
  * @access public
  * 
  * @information
@@ -25,7 +25,7 @@
  * @warning
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
  * EXPRESSED OR IMPLIED.
- *  
+ * 
  */
 class UGRSR {
 	
@@ -309,6 +309,9 @@ class UGRSR {
 		// Var to hold 
 		$global_write_count = 0;
 		
+		// Var for changed files
+		$global_written_files = [];
+		
 		// Var to hold number of bytes saved
 		$bytes_saved = 0;
 		
@@ -351,6 +354,7 @@ class UGRSR {
 				
 				// Add individual pattern change count to file change count
 				$file_change_count += $change_count;
+
 				$this->_dbg('REGEX <strong>' . $regex['pattern'] . '</strong> FOUND ' . ($change_count ? $change_count : 'NO') . ' MATCHES IN [' . $filename . ']');
 				
 			}
@@ -369,6 +373,7 @@ class UGRSR {
 					if($result) {
 						$this->_dbg('SUCCESSFULLY WROTE ' . $result . ' BYTES  TO [' . $filename . ']');
 						$global_write_count++;
+						$global_written_files[] = $filename;
 					} else {
 						$this->_dbg('WRITE OPERATION FAILED IN [' . $filename . ']');
 					}
@@ -397,7 +402,8 @@ class UGRSR {
 		// Pass back the number of changes and writes matched
 		return array(
 			'changes' => $global_change_count,
-			'writes' => $global_write_count
+			'writes' => $global_write_count,
+			'files' => $global_written_files
 		);
 	}
 	
