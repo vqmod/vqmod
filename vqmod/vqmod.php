@@ -5,12 +5,12 @@
  */
 abstract class VQMod {
 
-	public static $_vqversion = '2.6.7';						// Current version number
+	public static $_vqversion = '2.6.8';						// Current version number
 
-	private static $_modFileList = array();						// Array of xml files
-	private static $_mods = array();							// Array of modifications to apply
-	private static $_filesModded = array();						// Array of already modified files
-	private static $_doNotMod = array();						// Array of files not to apply modifications to
+	private static $_modFileList = [];							// Array of xml files
+	private static $_mods = [];									// Array of modifications to apply
+	private static $_filesModded = [];							// Array of already modified files
+	private static $_doNotMod = [];								// Array of files not to apply modifications to
 	private static $_cwd = '';									// Current working directory path
 	private static $_folderChecks = false;						// Flag for already checked log/cache folders exist
 	private static $_cachePathFull = '';						// Full cache folder path
@@ -27,7 +27,7 @@ abstract class VQMod {
 	public static $log;											// Log object reference
 	public static $fileModding = false;							// Reference to the current file being modified by vQmod for logging
 	public static $directorySeparator = '';						// System directory separator (/ or \ depending on OS)
-	public static $replaces = array();							// Array of regex replaces to perform on file paths
+	public static $replaces = [];								// Array of regex replaces to perform on file paths
 	public static $windows = false;								// Flag determining if windows or *nix based
 
 	/**
@@ -58,13 +58,13 @@ abstract class VQMod {
 		self::$log = new VQModLog();
 
 		$replacesPath = self::path(self::$pathReplaces);
-		$replaces = array();
+		$replaces = [];
 		if($replacesPath) {
 			include_once($replacesPath);
 			self::$_lastModifiedTime = filemtime($replacesPath);
 		}
 
-		self::$replaces = !is_array($replaces) ? array() : $replaces;
+		self::$replaces = !is_array($replaces) ? [] : $replaces;
 		self::_getMods();
 		self::_loadProtected();
 		self::_loadChecked();
@@ -159,7 +159,7 @@ abstract class VQMod {
 			self::$_doNotMod[] = $sourcePath;
 		}
 
-		self::$_filesModded[$sourcePath] = array('cached' => $changed);
+		self::$_filesModded[$sourcePath] = ['cached' => $changed];
 		return $changed ? $writePath : $sourcePath;
 	}
 
@@ -428,7 +428,7 @@ abstract class VQMod {
 					if($part === '*') {
 						continue;
 					} elseif(strpos($part, '*') !== false) {
-						$part = preg_replace_callback('~([^*]+)~', array('self', '_quotePath'), $part);
+						$part = preg_replace_callback('~([^*]+)~', ['VQMod', '_quotePath'], $part);
 						$part = str_replace('*', '[^/]*', $part);
 						$part = (bool) preg_match('~^' . $part . '$~', $checkParts[$k]);
 
@@ -495,7 +495,7 @@ class VQModLog {
 
 		$logPath = VQMod::path(VQMod::$logFolder . date('w_D') . '.log', true);
 
-		$txt = array();
+		$txt = [];
 
 		$txt[] = str_repeat('-', 10) . ' Date: ' . date('Y-m-d H:i:s') . ' ~ IP : ' . (isset($_SERVER['REMOTE_ADDR']) ? $_SERVER['REMOTE_ADDR'] : 'N/A') . ' ' . str_repeat('-', 10);
 		$txt[] = 'REQUEST URI : ' . $_SERVER['REQUEST_URI'];
@@ -581,7 +581,7 @@ class VQModObject {
 	public $version = '';
 	public $vqmver = '';
 	public $author = '';
-	public $mods = array();
+	public $mods = [];
 
 	private $_skip = false;
 
@@ -791,7 +791,6 @@ class VQModObject {
 			$filesToMod = explode(',', $file->getAttribute('name'));
 
 			foreach($filesToMod as $filename) {
-
 				$fileToMod = $path . $filename;
 				if(!empty($replaces)) {
 					foreach($replaces as $r) {
@@ -850,14 +849,14 @@ class VQModObject {
 					}
 
 					if(!$skipOperation) {
-						$this->mods[$fullPath][] = array(
+						$this->mods[$fullPath][] = [
 							'search' 		=> new VQSearchNode($search),
 							'add' 			=> new VQAddNode($add),
 							'ignoreif'		=> $ignoreif,
 							'error'		 	=> $error,
 							'fileToMod'		=> $fileToMod,
 							'opIndex'		=> $opIndex,
-						);
+						];
 					}
 				}
 				VQMod::$fileModding = false;
