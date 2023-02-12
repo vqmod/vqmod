@@ -5,7 +5,7 @@
  */
 abstract class VQMod {
 
-	public static $_vqversion = '2.6.7';						// Current version number
+	public static $_vqversion = '2.6.8';						// Current version number
 
 	private static $_modFileList = array();						// Array of xml files
 	private static $_mods = array();							// Array of modifications to apply
@@ -428,7 +428,7 @@ abstract class VQMod {
 					if($part === '*') {
 						continue;
 					} elseif(strpos($part, '*') !== false) {
-						$part = preg_replace_callback('~([^*]+)~', array('self', '_quotePath'), $part);
+						$part = preg_replace_callback('~([^*]+)~', 'VQMod::_quotePath', $part);
 						$part = str_replace('*', '[^/]*', $part);
 						$part = (bool) preg_match('~^' . $part . '$~', $checkParts[$k]);
 
