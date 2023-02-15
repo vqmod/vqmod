@@ -28,6 +28,7 @@ abstract class VQMod {
 	public static $fileModding = false;							// Reference to the current file being modified by vQmod for logging
 	public static $directorySeparator = '';						// System directory separator (/ or \ depending on OS)
 	public static $replaces = array();							// Array of regex replaces to perform on file paths
+	public static $extraMods = array();							// Array of extra paths for applying xml modifications
 	public static $windows = false;								// Flag determining if windows or *nix based
 
 	/**
@@ -59,12 +60,14 @@ abstract class VQMod {
 
 		$replacesPath = self::path(self::$pathReplaces);
 		$replaces = array();
+		$extraMods = array();
 		if($replacesPath) {
 			include_once($replacesPath);
 			self::$_lastModifiedTime = filemtime($replacesPath);
 		}
-
+    
 		self::$replaces = !is_array($replaces) ? array() : $replaces;
+		self::$extraMods = !is_array($extraMods) ? array() : $extraMods;
 		self::_getMods();
 		self::_loadProtected();
 		self::_loadChecked();
@@ -227,7 +230,15 @@ abstract class VQMod {
 	private static function _getMods() {
 
 		self::$_modFileList = glob(self::path('vqmod/xml/', true) . '*.xml');
-
+    
+    // Get extra modification paths
+    if (!empty(self::$extraMods)) {
+      foreach (self::$extraMods as $extraModsPath) {
+        $extraModFileList = glob($extraModsPath);
+        self::$_modFileList = array_merge(self::$_modFileList, $extraModFileList);
+      }
+    }
+    
 		foreach(self::$_modFileList as $file) {
 			if(file_exists($file)) {
 				$lastMod = filemtime($file);
